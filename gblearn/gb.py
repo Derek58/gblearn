@@ -300,8 +300,6 @@ class GrainBoundaryCollection(OrderedDict):
         if multires is not None:
             self.repargs["soap"] = multires
             self.store.configure("soap", multires)
-            for args in multires:
-                assert abs(args["rcut"] - self.padding/2.) < 1e-8
         else:
             self.repargs["soap"] = soapargs
             self.store.configure("soap", **soapargs)
@@ -638,7 +636,7 @@ class GrainBoundaryCollection(OrderedDict):
 
         for i in range(len(NP)):
             Pv = NP[i,:]
-            neighbor = uni.keys()[query.find_nearest_neighbor(Pv)]
+            neighbor = list(uni.keys())[query.find_nearest_neighbor(Pv)]
             result[neighbor].append((PID, i))
             if used is not None:
                 used[neighbor] = True
@@ -899,11 +897,7 @@ class GrainBoundary(object):
             self.box = None
             self.lattice = box.copy()
 
-        self.Z = None
-        if isinstance(Z, int):
-            self.Z = np.full(len(self), Z)
-        else: # pragma: no cover
-            self.Z = np.asarray(Z)
+        self.Z = Z
         self.LAEs = None
         self.LER = None
         self.ASR = None
@@ -1033,9 +1027,10 @@ class GrainBoundary(object):
             self.rep_params["soap"] = soapargs
 
         if self.P is None:
-            from pycsoap.soaplite import SOAP
-            soap_desc = SOAP(atomic_numbers=np.unique(self.Z).tolist(), nmax=soapargs['nmax'], lmax=soapargs['lmax'], rcut=soapargs['rcut'])
-            P = soap_desc.create(self.atoms)
+            from gblearn.soap import SOAPCalculator
+            calculator = SOAPCalculator(**soapargs)
+            raw = calculator.calc(self.atoms, self.Z)
+            P = raw["descriptor"]
 
             self._NP = None
             self._K = None
@@ -1078,12 +1073,12 @@ class GrainBoundary(object):
         calculating the SOAP vectors.
         """
         if self._atoms is None:
-            from ase import Atoms
-            a = Atoms(positions=self.xyz, numbers=self.Z)
-            a.set_cell(self.lattice)
+            from quippy.atoms import Atoms
+            a = Atoms(lattice=self.lattice)
+            for xyz in self.xyz:
+                a.add_atoms(xyz, self.Z)
             self._atoms = a
         return self._atoms
-
     def save_xyz(self, filename, species=None, vacuum=False):
         """Writes the grain boundary atoms to extended XYZ file format
         that can be used with QUIP.
