@@ -1043,10 +1043,7 @@ class GrainBoundary(object):
                     lmax=soapargs['lmax'],
                     rbf=rbf)
             P = soap_desc.create(self.atoms)
-            #from pycsoap.soaplite import SOAP
-            #soap_desc = SOAP(atomic_numbers=np.unique(self.Z).tolist(), nmax=soapargs['nmax'], lmax=soapargs['lmax'], rcut=soapargs['rcut'])
-            #P = soap_desc.create(self.atoms)
-
+            
             self._NP = None
             self._K = None
 
