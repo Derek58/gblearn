@@ -1017,11 +1017,13 @@ class GrainBoundary(object):
             if hasattr(current, "__getitem__"):
                 setattr(self, k, np.array(current)[ids])
 
-    def soap(self, cache=True, **soapargs):
+    def soap(self,rbf="gto", cache=True, **soapargs):
         """Calculates the SOAP vector matrix for the atomic environments at the
         grain boundary.
 
         Args:
+            rbf (str): radial basis functions to use. Options are "gto" for 
+              sperical gaussian type orbitals, and "polynomial" for a polynomial basis
             cache (bool): when True, cache the resulting SOAP matrix.
             soapargs (dict): soap parameters to use in extracting the
               representation.
@@ -1031,10 +1033,16 @@ class GrainBoundary(object):
             self.rep_params["soap"] = soapargs
 
         if self.P is None:
-            from pycsoap.soaplite import SOAP
-            soap_desc = SOAP(atomic_numbers=np.unique(self.Z).tolist(), nmax=soapargs['nmax'], lmax=soapargs['lmax'], rcut=soapargs['rcut'])
+            from dscribe.descriptors import SOAP
+            soap_desc = SOAP(
+                    species=self.Z,
+                    periodic=False,
+                    rcut=soapargs['rcut'],
+                    nmax=soapargs['nmax'],
+                    lmax=soapargs['lmax'],
+                    rbf=rbf)
             P = soap_desc.create(self.atoms)
-
+            
             self._NP = None
             self._K = None
 

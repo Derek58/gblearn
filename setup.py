@@ -35,7 +35,8 @@ setup(name='gblearn',
           "tqdm",
           "ase",
           "pycsoap",
-          "falconn==1.3.0"
+          "falconn==1.3.0",
+          "dscribe"
       ],
       packages=['gblearn'],
       scripts=[],
