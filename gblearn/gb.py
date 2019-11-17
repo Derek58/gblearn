@@ -1024,7 +1024,8 @@ class GrainBoundary(object):
         grain boundary.
 
         Args:
-            rbf (str): radial basis function that SOAP uses; see Dscribe documentation #TODO, document
+            rbf (str): radial basis functions to use. Options are "gto" for 
+              sperical gaussian type orbitals, and "polynomial" for a polynomial basis
             cache (bool): when True, cache the resulting SOAP matrix.
             soapargs (dict): soap parameters to use in extracting the
               representation.
