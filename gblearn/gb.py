@@ -1019,7 +1019,7 @@ class GrainBoundary(object):
             if hasattr(current, "__getitem__"):
                 setattr(self, k, np.array(current)[ids])
 
-    def soap(self,rbf="gto", cache=True, **soapargs):
+    def soap(self,rbf="gto", threads=0, cache=True, **soapargs):
         """Calculates the SOAP vector matrix for the atomic environments at the
         grain boundary.
 
@@ -1043,7 +1043,16 @@ class GrainBoundary(object):
                     nmax=soapargs['nmax'],
                     lmax=soapargs['lmax'],
                     rbf=rbf)
-            P = soap_desc.create(self.atoms)
+
+            if threads == 0:
+                try: 
+                    threads = mp.cpu_count()
+                except NotImplementedError:
+                    msg.warn("Unable to determine number of available CPU's," 
+                    "resorting to 1 thread")
+                    threads = 1
+
+            P = soap_desc.create(self.atoms, n_jobs=threads)
             
             self._NP = None
             self._K = None
